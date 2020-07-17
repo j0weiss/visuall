@@ -25,7 +25,7 @@
 
 <script>
 import FileUploader from '@/components/FileUploader.vue';
-import FileViewer from '@/components/FileViewer.vue';
+const FileViewer = () => import('@/components/FileViewer.vue');
 
 export default {
   name: 'App',

@@ -36,7 +36,7 @@
 </template>
 
 <script>
-import Plotly from 'plotly.js-dist';
+import Highcharts from 'highcharts';
 
 export default {
   name: 'FileViewer',
@@ -48,50 +48,39 @@ export default {
   },
   data() {
     return {
-      dimensions: [],
-      traces: [],
-      layout: {}
+      dimensions: []
     };
   },
   methods: {
     handleDimensionSelection(event) {
-      this.layout = {};
-      this.$nextTick(() => this.showGraph(this.dimensions));
+      this.showGraph();
     },
-    showGraph(dimensions) {
+    showGraph() {
       const records = this.fitData.activity.sessions[0].laps[0].records;
-      const x = records.map(record => record.elapsed_time);
 
-      dimensions.forEach((dimension, index) => {
-        const config = {
-          x,
-          y: records.map(record => record[dimension]),
-          type: 'scatter'
+      const series = this.dimensions.map((dimension, index) => {
+        return {
+          yAxis: index,
+          name: dimension,
+          data: records.map(record => [record.elapsed_time, record[dimension]])
         };
-
-        if (index > 0) {
-          config.yaxis = `y${index + 1}`;
-        }
-
-        this.traces.push(config);
       });
 
-      this.traces.forEach((trace, index) => {
-        if (index === 0) {
-          this.layout.yaxis = {
-            title: dimensions[index],
-            side: index % 2 === 0 ? 'left' : 'right'
-          };
-        } else {
-          this.layout[`yaxis${index + 1}`] = {
-            title: dimensions[index],
-            overlaying: 'y',
-            side: index % 2 === 0 ? 'left' : 'right'
-          };
-        }
+      const yAxis = this.dimensions.map(dimension => {
+        return {
+          title: {
+            text: dimension
+          }
+        };
       });
 
-      Plotly.newPlot('chart', this.traces, this.layout);
+      Highcharts.chart('chart', {
+        series,
+        yAxis,
+        credits: {
+          enabled: false
+        }
+      });
     }
   }
 };
