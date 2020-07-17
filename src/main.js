@@ -1,4 +1,5 @@
 import Vue from 'vue';
+import '@/plugins/index.js';
 import App from './App.vue';
 // import './registerServiceWorker'
 import store from './store';

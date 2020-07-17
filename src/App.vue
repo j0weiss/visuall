@@ -8,57 +8,14 @@
       </h1>
     </header>
     <main class="p-4 flex justify-center items-center">
-      <form
+      <FileUploader
         v-if="fitData === undefined"
-        id="dropzone"
-        class="p-1 bg-white rounded border border-blue-grey-200"
-        @dropenter.prevent.stop
-        @dragover.prevent.stop="$event.dataTransfer.dropEffect = 'move'"
-        @drop.prevent.stop="loadFile($event)">
-        <div class="rounded border-dashed border-2 border-blue-grey-400">
-          <p>
-            Get started by uploading your workout file
-          </p>
-          <input
-            type="file"
-            accept=".fit"
-            @change="loadFile($event)">
-        </div>
-      </form>
-      <section v-else>
-        <p>Sport: {{ fitData.sport.name }}</p>
-        <p>Time: {{ fitData.activity['local_timestamp'] }}</p>
-        <p>Duration: {{ fitData.activity['total_timer_time'] }}</p>
-        <form class="flex flex-wrap space-x-2">
-          <div>
-            <input
-              id="altitude"
-              v-model="dimensions"
-              type="checkbox"
-              name="altitude"
-              value="altitude"
-              @change="handleDimensionSelection($event)">
-            <label for="altitude">altitude</label>
-            <input
-              id="heart_rate"
-              v-model="dimensions"
-              type="checkbox"
-              name="heart_rate"
-              value="heart_rate"
-              @change="handleDimensionSelection($event)">
-            <label for="heart_rate">heart_rate</label>
-            <input
-              id="speed"
-              v-model="dimensions"
-              type="checkbox"
-              name="speed"
-              value="speed"
-              @change="handleDimensionSelection($event)">
-            <label for="speed">speed</label>
-          </div>
-        </form>
-        <div id="chart" />
-      </section>
+        class="w-1/2 h-64"
+        @file-uploaded="(file) => parseFile(file)" />
+      <FileViewer
+        v-else
+        :fit-data="fitData"
+      />
     </main>
     <footer class="p-1 flex justify-center">
       Footer
@@ -67,93 +24,23 @@
 </template>
 
 <script>
-import * as fitFileParser from 'fit-file-parser';
-import Plotly from 'plotly.js-dist';
+import FileUploader from '@/components/FileUploader.vue';
+import FileViewer from '@/components/FileViewer.vue';
 
 export default {
   name: 'App',
+  components: {
+    FileUploader,
+    FileViewer
+  },
   data() {
     return {
-      fitData: undefined,
-      dimensions: [],
-      traces: [],
-      layout: {}
+      fitData: undefined
     };
   },
   methods: {
-    loadFile(event) {
-      const files = event.type === 'drop'
-        ? event.dataTransfer.files
-        : event.target.files;
-
-      if (files.length > 1) {
-        // TODO: do error handling
-        console.error('Only one file');
-      } else {
-        this.parseFile(files[0]);
-      }
-    },
-    parseFile(file) {
-      // TODO: handle this import correctly
-      // eslint-disable-next-line new-cap
-      const fitParser = new fitFileParser.default({
-        force: true,
-        speedUnit: 'km/h',
-        lengthUnit: 'km',
-        temperatureUnit: 'kelvin',
-        elapsedRecordField: true,
-        mode: 'cascade'
-      });
-
-      file.arrayBuffer()
-        .then(content => {
-          fitParser.parse(content, (error, data) => {
-            if (error) {
-              console.error(error);
-            } else {
-              this.fitData = data;
-            }
-          });
-        });
-    },
-    handleDimensionSelection(event) {
-      this.layout = {};
-      this.$nextTick(() => this.showGraph(this.dimensions));
-    },
-    showGraph(dimensions) {
-      const records = this.fitData.activity.sessions[0].laps[0].records;
-      const x = records.map(record => record.elapsed_time);
-
-      dimensions.forEach((dimension, index) => {
-        const config = {
-          x,
-          y: records.map(record => record[dimension]),
-          type: 'scatter'
-        };
-
-        if (index > 0) {
-          config.yaxis = `y${index + 1}`;
-        }
-
-        this.traces.push(config);
-      });
-
-      this.traces.forEach((trace, index) => {
-        if (index === 0) {
-          this.layout.yaxis = {
-            title: dimensions[index],
-            side: index % 2 === 0 ? 'left' : 'right'
-          };
-        } else {
-          this.layout[`yaxis${index + 1}`] = {
-            title: dimensions[index],
-            overlaying: 'y',
-            side: index % 2 === 0 ? 'left' : 'right'
-          };
-        }
-      });
-
-      Plotly.newPlot('chart', this.traces, this.layout);
+    async parseFile(file) {
+      this.fitData = await this.$parseFitFile(file);
     }
   }
 };
