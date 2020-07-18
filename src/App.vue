@@ -76,14 +76,14 @@
                     class="flex-shrink-0 mr-1.5 text-blue-grey-500"
                     size="lg"
                     icon="arrows-alt-h" />
-                  {{ fitData.activity.sessions[0]['total_distance'] }}
+                  {{ Math.round(fitData.activity.sessions[0]['total_distance'] * 10) / 10 + ' km' }}
                 </div>
                 <div class="mt-2 flex items-center text-sm leading-5 text-blue-grey-300 sm:mr-6">
                   <font-awesome-icon
                     class="flex-shrink-0 mr-1.5 text-blue-grey-500"
                     size="lg"
                     icon="stopwatch" />
-                  {{ fitData.activity.sessions[0]['total_elapsed_time'] }}
+                  {{ new Date(fitData.activity.sessions[0]['total_elapsed_time'] * 1000).toISOString().substr(11, 8) + ' h' }}
                 </div>
                 <div class="mt-2 flex items-center text-sm leading-5 text-blue-grey-300 sm:mr-6">
                   <font-awesome-icon

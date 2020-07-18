@@ -60,7 +60,9 @@ export default {
       this.showGraph();
     },
     showGraph() {
-      const records = this.fitData.activity.sessions[0].laps[0].records;
+      const records = this.fitData.activity.sessions[0].laps
+        .map(lap => lap.records)
+        .flat();
 
       const series = this.dimensions.map((dimension, index) => {
         return {
@@ -78,9 +80,25 @@ export default {
         };
       });
 
+      const totalElapsedTime = this.fitData.activity.sessions[0].total_elapsed_time;
+
       Highcharts.chart('chart', {
-        series,
+        chart: {
+          zoomType: 'x'
+        },
+        xAxis: {
+          labels: {
+            formatter: function() {
+              if (totalElapsedTime < 3600) {
+                return new Date(this.value * 1000).toISOString().substr(14, 5);
+              } else {
+                return new Date(this.value * 1000).toISOString().substr(11, 8);
+              }
+            }
+          }
+        },
         yAxis,
+        series,
         credits: {
           enabled: false
         }
