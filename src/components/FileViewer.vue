@@ -1,38 +1,39 @@
 <template>
-  <section>
-    <p>Sport: {{ fitData.sport.name }}</p>
-    <p>Time: {{ fitData.activity['local_timestamp'] }}</p>
-    <p>Duration: {{ fitData.activity['total_timer_time'] }}</p>
-    <form class="flex flex-wrap space-x-2">
-      <div>
-        <input
-          id="altitude"
-          v-model="dimensions"
-          type="checkbox"
-          name="altitude"
-          value="altitude"
-          @change="handleDimensionSelection($event)">
-        <label for="altitude">altitude</label>
-        <input
-          id="heart_rate"
-          v-model="dimensions"
-          type="checkbox"
-          name="heart_rate"
-          value="heart_rate"
-          @change="handleDimensionSelection($event)">
-        <label for="heart_rate">heart_rate</label>
-        <input
-          id="speed"
-          v-model="dimensions"
-          type="checkbox"
-          name="speed"
-          value="speed"
-          @change="handleDimensionSelection($event)">
-        <label for="speed">speed</label>
-      </div>
-    </form>
-    <div id="chart" />
-  </section>
+  <div class="flex space-x-3">
+    <section class="flex-auto bg-white rounded-lg shadow px-5 py-6 sm:px-6">
+      <div id="chart" />
+    </section>
+    <section class="self-start bg-white rounded-lg shadow px-5 py-6 sm:px-6">
+      <form class="flex flex-wrap space-x-2">
+        <div>
+          <input
+            id="altitude"
+            v-model="dimensions"
+            type="checkbox"
+            name="altitude"
+            value="altitude"
+            @change="handleDimensionSelection($event)">
+          <label for="altitude">altitude</label>
+          <input
+            id="heart_rate"
+            v-model="dimensions"
+            type="checkbox"
+            name="heart_rate"
+            value="heart_rate"
+            @change="handleDimensionSelection($event)">
+          <label for="heart_rate">heart_rate</label>
+          <input
+            id="speed"
+            v-model="dimensions"
+            type="checkbox"
+            name="speed"
+            value="speed"
+            @change="handleDimensionSelection($event)">
+          <label for="speed">speed</label>
+        </div>
+      </form>
+    </section>
+  </div>
 </template>
 
 <script>
@@ -48,8 +49,11 @@ export default {
   },
   data() {
     return {
-      dimensions: []
+      dimensions: ['heart_rate']
     };
+  },
+  mounted () {
+    this.showGraph();
   },
   methods: {
     handleDimensionSelection(event) {
