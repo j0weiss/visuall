@@ -20,12 +20,31 @@
               </div>
             </div>
             <ul class="ml-10 flex items-baseline">
+              <li v-if="fitData !== undefined">
+                <button
+                  class="ml-4 px-3 py-2 rounded-md
+                         border border-blue-grey-300
+                         text-sm font-medium text-blue-grey-300
+                         hover:text-white"
+                  @click="fitData = undefined">
+                  View new file
+                </button>
+              </li>
               <li>
                 <a
                   href="#"
                   class="ml-4 px-3 py-2 rounded-md
-                           text-sm font-medium text-blue-grey-300
-                           hover:text-white">
+                         text-sm font-medium text-blue-grey-300
+                         hover:text-white">
+                  How to use
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#"
+                  class="ml-4 px-3 py-2 rounded-md
+                         text-sm font-medium text-blue-grey-300
+                         hover:text-white">
                   About
                 </a>
               </li>
@@ -33,8 +52,8 @@
                 <a
                   href="https://github.com/j0weiss/visuall"
                   class="ml-4 px-3 py-2 rounded-md
-                           text-base font-medium text-blue-grey-300
-                           hover:text-white">
+                         text-base font-medium text-blue-grey-300
+                         hover:text-white">
                   <font-awesome-icon :icon="['fab', 'github']" />
                 </a>
               </li>
@@ -54,7 +73,7 @@
             class="lg:flex lg:items-center lg:justify-between">
             <div class="flex-1 min-w-0">
               <h1 class="text-2xl font-bold leading-7 text-white sm:text-3xl sm:leading-9 sm:truncate">
-                {{ fitData.sport.name }}
+                {{ getSport() }}
               </h1>
               <div class="mt-1 flex flex-col sm:mt-0 sm:flex-row sm:flex-wrap">
                 <div class="mt-2 flex items-center text-sm leading-5 text-blue-grey-300 sm:mr-6">
@@ -62,28 +81,28 @@
                     class="flex-shrink-0 mr-1.5 text-blue-grey-500"
                     size="lg"
                     :icon="['far', 'calendar-alt']" />
-                  {{ fitData.activity['local_timestamp'].toLocaleDateString() }}
+                  {{ fitData['activity']['timestamp'].toLocaleDateString() }}
                 </div>
                 <div class="mt-2 flex items-center text-sm leading-5 text-blue-grey-300 sm:mr-6">
                   <font-awesome-icon
                     class="flex-shrink-0 mr-1.5 text-blue-grey-500"
                     size="lg"
                     :icon="['far', 'clock']" />
-                  {{ fitData.activity['local_timestamp'].toLocaleTimeString() }}
+                  {{ fitData['activity']['sessions'][0]['start_time'].toLocaleTimeString() }}
                 </div>
                 <div class="mt-2 flex items-center text-sm leading-5 text-blue-grey-300 sm:mr-6">
                   <font-awesome-icon
                     class="flex-shrink-0 mr-1.5 text-blue-grey-500"
                     size="lg"
                     icon="arrows-alt-h" />
-                  {{ Math.round(fitData.activity.sessions[0]['total_distance'] * 10) / 10 + ' km' }}
+                  {{ Math.round(fitData['activity']['sessions'][0]['total_distance'] * 10) / 10 + ' km' }}
                 </div>
                 <div class="mt-2 flex items-center text-sm leading-5 text-blue-grey-300 sm:mr-6">
                   <font-awesome-icon
                     class="flex-shrink-0 mr-1.5 text-blue-grey-500"
                     size="lg"
                     icon="stopwatch" />
-                  {{ new Date(fitData.activity.sessions[0]['total_elapsed_time'] * 1000).toISOString().substr(11, 8) + ' h' }}
+                  {{ new Date(fitData['activity']['sessions'][0]['total_elapsed_time'] * 1000).toISOString().substr(11, 8) + ' h' }}
                 </div>
                 <div class="mt-2 flex items-center text-sm leading-5 text-blue-grey-300 sm:mr-6">
                   <font-awesome-icon
@@ -148,6 +167,9 @@ export default {
   methods: {
     async parseFile(file) {
       this.fitData = await this.$parseFitFile(file);
+    },
+    getSport() {
+      return this.fitData?.sport?.name || 'Unknown Sport';
     },
     getCity() {
       const lat = this.fitData?.activity?.sessions[0]['start_position_lat'];
