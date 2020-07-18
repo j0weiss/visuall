@@ -1,10 +1,12 @@
 <template>
   <form
-    class="p-1 bg-white rounded border border-blue-grey-200"
+    class="bg-white rounded-lg shadow px-5 py-6 sm:px-6"
     @dropenter.prevent.stop
     @dragover.prevent.stop="$event.dataTransfer.dropEffect = 'move'"
     @drop.prevent.stop="loadFile($event)">
-    <div class="h-full p-4 rounded border-dashed border-2 border-blue-grey-400 grid justify-center content-center">
+    <div
+      class="h-full border-4 border-dashed border-blue-grey-200 rounded-lg
+             grid justify-center content-center">
       <p>
         Get started by uploading your workout file
       </p>
