@@ -57,6 +57,10 @@ export default {
     fitData: {
       type: Object,
       required: true
+    },
+    selectedSession: {
+      type: Number,
+      required: true
     }
   },
   data() {
@@ -84,6 +88,11 @@ export default {
       return sportRecords.running.filter(record => this.fitFileRecords.has(record));
     }
   },
+  watch: {
+    selectedSession() {
+      this.showGraph();
+    }
+  },
   mounted() {
     this.showGraph();
   },
@@ -92,9 +101,16 @@ export default {
       this.showGraph();
     },
     showGraph() {
-      const records = this.fitData.activity.sessions[0].laps
-        .map(lap => lap.records)
-        .flat();
+      let records;
+      if (this.selectedSession !== -1) {
+        records = this.fitData?.activity?.sessions[this.selectedSession].laps
+          .map(lap => lap.records)
+          .flat();
+      } else {
+        records = this.fitData?.activity?.sessions
+          .map(session => session.laps.map(lap => lap.records).flat())
+          .flat();
+      }
 
       const series = this.dimensions.map((dimension, index) => {
         return {
@@ -104,7 +120,7 @@ export default {
         };
       });
 
-      const totalElapsedTime = this.fitData.activity.sessions[0].total_elapsed_time;
+      const totalElapsedTime = this.fitData?.activity['total_timer_time'];
       const xAxis = {
         labels: {
           formatter: function() {
@@ -142,8 +158,10 @@ export default {
       Highcharts.chart('chart', chartOptions);
     },
     getPlotBands() {
-      if (this.lapsPerSession[0] > 1) {
-        return this.fitData?.activity?.sessions[0].laps.map((lap, index) => {
+      if (this.selectedSession === -1) {
+        return null;
+      } else if (this.lapsPerSession[this.selectedSession] > 1) {
+        return this.fitData?.activity?.sessions[this.selectedSession].laps.map((lap, index) => {
           return {
             color: index % 2 === 0 ? '#BEF8FD' : '#FFFFFF',
             from: lap.records[0].elapsed_time,
@@ -158,6 +176,8 @@ export default {
 };
 </script>
 
-<style scoped>
-
+<style>
+  .highcharts-legend-item-hidden {
+    visibility: hidden !important;
+  }
 </style>

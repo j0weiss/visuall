@@ -5,7 +5,10 @@ import {
   faMapMarkerAlt,
   faArrowsAltH,
   faStopwatch,
-  faCircleNotch
+  faCircleNotch,
+  faExchangeAlt,
+  faAngleLeft,
+  faAngleRight
 } from '@fortawesome/free-solid-svg-icons';
 import {
   faCalendarAlt,
@@ -21,6 +24,9 @@ library.add(
   faArrowsAltH,
   faStopwatch,
   faCircleNotch,
+  faExchangeAlt,
+  faAngleLeft,
+  faAngleRight,
   // regular
   faCalendarAlt,
   faClock,

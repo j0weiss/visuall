@@ -63,13 +63,8 @@
       </nav>
       <header class="py-10">
         <div class="mx-auto px-4 sm:px-6 lg:px-8">
-          <h1
-            v-if="fitData === undefined"
-            class="text-3xl leading-9 font-bold text-white">
-            Dashboard
-          </h1>
           <div
-            v-else
+            v-if="fitData !== undefined"
             class="lg:flex lg:items-center lg:justify-between">
             <div class="flex-1 min-w-0">
               <h1 class="text-2xl font-bold leading-7 text-white sm:text-3xl sm:leading-9 sm:truncate">
@@ -136,7 +131,126 @@
         <FileViewer
           v-else
           :fit-data="fitData"
+          :selected-session="selectedSession"
         />
+      </div>
+      <div
+        v-if="fitData !== undefined"
+        class="session-lap-nav pb-4 px-4 sm:px-6 lg:px-8">
+        <button
+          v-if="numOfSessions > 1"
+          type="button"
+          class="border border-blue-grey-300 rounded-md
+                 inline-flex justify-center items-center px-3 py-2
+                 bg-white text-sm leading-4 font-medium text-blue-grey-700
+                 hover:text-blue-grey-500
+                 focus:outline-none focus:border-blue-300 focus:shadow-outline-blue
+                 active:text-blue-grey-800 active:bg-blue-grey-50
+                 transition ease-in-out duration-150"
+          @click="selectedSession = -1">
+          All Sessions
+        </button>
+        <nav
+          v-if="numOfSessions > 1"
+          class="relative z-0 inline-flex">
+          <a
+            href="#"
+            class="relative items-center inline-flex px-2 py-2
+                   rounded-l-md border border-blue-grey-300
+                   bg-white text-sm leading-5 font-medium text-blue-grey-500
+                   hover:text-blue-grey-400
+                   focus:z-10 focus:outline-none focus:border-blue-300 focus:shadow-outline-blue
+                   active:bg-blue-grey-100 active:text-blue-grey-500
+                   transition ease-in-out duration-150"
+            aria-label="Previous">
+            <font-awesome-icon icon="angle-left" />
+          </a>
+          <a
+            v-for="(session, index) of sessions"
+            :key="`${session}-${index}`"
+            href="#"
+            class="-ml-px relative inline-flex items-center px-4 py-2
+                   border border-blue-grey-300
+                   bg-white text-sm leading-5 font-medium text-blue-grey-700
+                   hover:text-blue-grey-500
+                   focus:z-10 focus:outline-none focus:border-blue-300 focus:shadow-outline-blue
+                   active:bg-blue-grey-100 active:text-blue-grey-700
+                   transition ease-in-out duration-150"
+            @click="selectedSession = index">
+            <font-awesome-icon
+              v-if="session === 'transition'"
+              class="text-blue-grey-400"
+              icon="exchange-alt" />
+            <template v-else>
+              {{ session }}
+            </template>
+          </a>
+          <a
+            href="#"
+            class="-ml-px relative items-center inline-flex px-2 py-2
+                   rounded-r-md border border-blue-grey-300
+                   bg-white text-sm leading-5 font-medium text-blue-grey-500
+                   hover:text-blue-grey-400
+                   focus:z-10 focus:outline-none focus:border-blue-300 focus:shadow-outline-blue
+                   active:bg-blue-grey-100 active:text-blue-grey-500
+                   transition ease-in-out duration-150"
+            aria-label="Next">
+            <font-awesome-icon icon="angle-right" />
+          </a>
+        </nav>
+        <button
+          v-if="lapsPerSession[selectedSession] > 1"
+          type="button"
+          class="border border-blue-grey-300 rounded-md
+                 inline-flex justify-center items-center px-3 py-2
+                 bg-white text-sm leading-4 font-medium text-blue-grey-700
+                 hover:text-blue-grey-500
+                 focus:outline-none focus:border-blue-300 focus:shadow-outline-blue
+                 active:text-blue-grey-800 active:bg-blue-grey-50
+                 transition ease-in-out duration-150">
+          All Laps
+        </button>
+        <nav
+          v-if="lapsPerSession[selectedSession] > 1"
+          class="relative z-0 inline-flex">
+          <a
+            href="#"
+            class="relative items-center inline-flex px-2 py-2
+                   rounded-l-md border border-blue-grey-300
+                   bg-white text-sm leading-5 font-medium text-blue-grey-500
+                   hover:text-blue-grey-400
+                   focus:z-10 focus:outline-none focus:border-blue-300 focus:shadow-outline-blue
+                   active:bg-blue-grey-100 active:text-blue-grey-500
+                   transition ease-in-out duration-150"
+            aria-label="Previous">
+            <font-awesome-icon icon="angle-left" />
+          </a>
+          <a
+            v-for="sessionIndex of lapsOfSelectedSession"
+            :key="`lap-${sessionIndex}`"
+            href="#"
+            class="-ml-px relative inline-flex items-center px-4 py-2
+                   border border-blue-grey-300
+                   bg-white text-sm leading-5 font-medium text-blue-grey-700
+                   hover:text-blue-grey-500
+                   focus:z-10 focus:outline-none focus:border-blue-300 focus:shadow-outline-blue
+                   active:bg-blue-grey-100 active:text-blue-grey-700
+                   transition ease-in-out duration-150">
+            {{ sessionIndex }}
+          </a>
+          <a
+            href="#"
+            class="-ml-px relative items-center inline-flex px-2 py-2
+                   rounded-r-md border border-blue-grey-300
+                   bg-white text-sm leading-5 font-medium text-blue-grey-500
+                   hover:text-blue-grey-400
+                   focus:z-10 focus:outline-none focus:border-blue-300 focus:shadow-outline-blue
+                   active:bg-blue-grey-100 active:text-blue-grey-500
+                   transition ease-in-out duration-150"
+            aria-label="Next">
+            <font-awesome-icon icon="angle-right" />
+          </a>
+        </nav>
       </div>
       <!-- /End replace -->
     </main>
@@ -156,8 +270,30 @@ export default {
   data() {
     return {
       fitData: undefined,
-      city: ''
+      city: '',
+      selectedSession: -1
     };
+  },
+  computed: {
+    numOfSessions() {
+      return this.fitData?.activity['num_sessions'];
+    },
+    sessions() {
+      return this.fitData?.activity?.sessions?.map(session => session?.sport);
+    },
+    lapsPerSession() {
+      return [...Array(this.numOfSessions).keys()]
+        .map((_, index) => this.fitData?.activity?.sessions[index]['num_laps']);
+    },
+    lapsOfSelectedSession() {
+      if (this.selectedSession !== -1) {
+        const laps = [...Array(this.lapsPerSession[this.selectedSession] + 1).keys()];
+        laps.shift();
+        return laps;
+      } else {
+        return 0;
+      }
+    }
   },
   watch: {
     fitData() {
@@ -192,5 +328,11 @@ export default {
 <style>
   body {
     min-height: 100vh;
+  }
+
+  .session-lap-nav {
+    display: grid;
+    grid-template: auto auto / max-content auto;
+    gap: 0.5rem;
   }
 </style>

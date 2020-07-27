@@ -1,12 +1,15 @@
-import { shallowMount } from '@vue/test-utils'
-import HelloWorld from '@/components/HelloWorld.vue'
+import fs from 'fs';
+import path from 'path';
+import { createLocalVue } from '@vue/test-utils';
+import FitFileParser from '@/plugins/fitFileParser.js';
 
-describe('HelloWorld.vue', () => {
-  it('renders props.msg when passed', () => {
-    const msg = 'new message'
-    const wrapper = shallowMount(HelloWorld, {
-      propsData: { msg }
-    })
-    expect(wrapper.text()).toMatch(msg)
-  })
-})
+describe.skip('parser', () => {
+  it('parse', () => {
+    const localVue = createLocalVue();
+    localVue.use(FitFileParser);
+
+    const buffer = fs.readFileSync(path.resolve(__dirname, './run.fit'));
+
+    console.log(localVue.prototype.$readFitFile(buffer));
+  });
+});

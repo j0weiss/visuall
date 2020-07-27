@@ -2,8 +2,16 @@ import * as fitFileParser from 'fit-file-parser';
 
 const FitFileParser = {};
 
-FitFileParser.install = function (Vue, options) {
+FitFileParser.install = function (Vue) {
   Vue.prototype.$parseFitFile = async function (file) {
+    return await file.arrayBuffer()
+      .then(content => this.$readFitFile(content))
+      // eslint-disable-next-line no-return-assign
+      .then(data => data)
+      .catch(error => console.error(error));
+  };
+
+  Vue.prototype.$readFitFile = function(buffer) {
     // TODO: handle this import correctly
     // eslint-disable-next-line new-cap
     const fitParser = new fitFileParser.default({
@@ -15,16 +23,12 @@ FitFileParser.install = function (Vue, options) {
       mode: 'cascade'
     });
 
-    let fitData = {};
+    let content = {};
+    fitParser.parse(buffer, (error, data) => {
+      if (!error) content = data;
+    });
 
-    await file.arrayBuffer()
-      .then(content => fitParser.parse(content, (error, data) => {
-        if (!error) {
-          fitData = data;
-        }
-      }));
-
-    return fitData;
+    return content;
   };
 };
 
