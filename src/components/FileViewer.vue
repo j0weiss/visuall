@@ -48,7 +48,11 @@
 </template>
 
 <script>
-import Highcharts from 'highcharts';
+import { select } from 'd3-selection';
+import { axisLeft, axisBottom } from 'd3-axis';
+import { scaleLinear } from 'd3-scale';
+import { max, extent } from 'd3-array';
+import { line } from 'd3-shape';
 import sportRecords from '@/mappings/sportRecords.js';
 
 export default {
@@ -66,7 +70,11 @@ export default {
   data() {
     return {
       dimensions: ['heart_rate'], // TODO: intelligent selection
-      chartOptions: {}
+      chartOptions: {},
+      svg: null,
+      width: 400,
+      height: 100,
+      margin: { top: 20, right: 30, bottom: 30, left: 40 }
     };
   },
   computed: {
@@ -94,11 +102,22 @@ export default {
     }
   },
   mounted() {
+    this.initGraph();
     this.showGraph();
   },
   methods: {
     handleDimensionSelection(event) {
       this.showGraph();
+    },
+    initGraph() {
+      this.svg = select('#chart').append('svg')
+        .attr('viewBox', [0, 0, this.width, this.height]);
+      this.svg.append('g')
+        .attr('class', 'x-axis');
+      this.svg.append('g')
+        .attr('class', 'y-axis');
+      this.svg.append('g')
+        .attr('class', 'lines');
     },
     showGraph() {
       let records;
@@ -112,72 +131,52 @@ export default {
           .flat();
       }
 
-      const series = this.dimensions.map((dimension, index) => {
-        return {
-          yAxis: index,
-          name: this.$getRecordLabel(dimension),
-          data: records.map(record => [record.elapsed_time, record[dimension]])
-        };
-      });
-
-      const totalElapsedTime = this.fitData?.activity['total_timer_time'];
-      const xAxis = {
-        labels: {
-          formatter: function() {
-            if (totalElapsedTime < 3600) {
-              return new Date(this.value * 1000).toISOString().substr(14, 5);
-            } else {
-              return new Date(this.value * 1000).toISOString().substr(11, 8);
-            }
-          }
-        },
-        plotBands: this.getPlotBands()
-      };
-
-      const yAxis = this.dimensions.map(dimension => {
-        return {
-          title: {
-            text: this.$getRecordLabel(dimension)
-          }
-        };
-      });
-
-      const chartOptions = {
-        chart: {
-          zoomType: 'x'
-        },
-        xAxis,
-        yAxis,
-        series,
-        credits: {
-          enabled: false
-        }
-      };
-      this.chartOptions = chartOptions;
-
-      Highcharts.chart('chart', chartOptions);
-    },
-    getPlotBands() {
-      if (this.selectedSession === -1) {
-        return null;
-      } else if (this.lapsPerSession[this.selectedSession] > 1) {
-        return this.fitData?.activity?.sessions[this.selectedSession].laps.map((lap, index) => {
+      const data = this.dimensions
+        .map(dimension => {
           return {
-            color: index % 2 === 0 ? '#BEF8FD' : '#FFFFFF',
-            from: lap.records[0].elapsed_time,
-            to: lap.records[lap.records.length - 1].elapsed_time
+            name: dimension,
+            values: records.map(record => record[dimension])
           };
         });
-      } else {
-        return null;
-      }
+
+      const x = scaleLinear()
+        .domain(extent(records.map(record => record.elapsed_time)))
+        .range([this.margin.left, this.width - this.margin.right]);
+
+      const y = scaleLinear()
+        .domain([0, max(data, d => max(d.values))]).nice()
+        .range([this.height - this.margin.bottom, this.margin.top]);
+
+      const xAxis = g => g
+        .attr('transform', `translate(0,${this.height - this.margin.bottom})`)
+        .call(axisBottom(x));
+
+      const yAxis = g => g
+        .attr('transform', `translate(${this.margin.left},0)`)
+        .call(axisLeft(y));
+
+      const lineGraph = line()
+        .defined(d => !isNaN(d.value))
+        .x(d => x(d.timepoint))
+        .y(d => y(d.value));
+
+      this.svg.select('g.x-axis')
+        .call(xAxis);
+
+      this.svg.select('g.y-axis')
+        .call(yAxis);
+
+      this.svg.selectAll('g.lines path.line')
+        .attr('fill', 'none')
+        .attr('stroke', 'steelblue')
+        .attr('stroke-width', 0.5)
+        .attr('stroke-linejoin', 'round')
+        .attr('stroke-linecap', 'round')
+        .data(data)
+        .join('path')
+        .style('mix-blend-mode', 'multiply')
+        .attr('d', d => lineGraph(d.values));
     }
   }
 };
 </script>
-
-<style>
-  .highcharts-legend-item-hidden {
-    visibility: hidden !important;
-  }
-</style>
