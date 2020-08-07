@@ -311,10 +311,10 @@ export default {
       const lat = this.fitData?.activity?.sessions[0]['start_position_lat'];
       const long = this.fitData?.activity?.sessions[0]['start_position_long'];
       this.city = 'loading';
-      fetch(`https://geocode.xyz/${lat},${long}?geoit=json`)
+      fetch(`api/location?lat=${lat}&long=${long}`)
         .then(response => response.json())
-        .then(geoInfo => {
-          this.city = geoInfo.city;
+        .then(location => {
+          this.city = location.city;
         })
         .catch(error => {
           console.error(error);
