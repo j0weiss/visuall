@@ -17,7 +17,7 @@
     "@tailwindcss/ui": "^0.3.1",
     "core-js": "^3.6.5",
     "fit-file-parser": "^1.6.18",
-    "highcharts": "^8.1.2",
+    "highcharts": "^9.0.0",
     "register-service-worker": "^1.7.1",
     "tailwindcss": "^1.4.6",
     "vue": "^2.6.11",
